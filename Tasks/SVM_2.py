@@ -4,7 +4,7 @@ import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.svm import SVC
 from sklearn.grid_search import GridSearchCV
-from sklearn.cross_validation import KFold
+from sklearn.model_selection import KFold
 
 # 1. Загрузите объекты из новостного датасета 20 newsgroups,
 # относящиеся к категориям "космос" и "атеизм" (инструкция приведена выше).

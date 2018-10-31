@@ -1,6 +1,6 @@
-from sklearn.ensemble import GradientBoostingClassifier, GradientBoostingRegressor, RandomForestClassifier
+from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier
 from sklearn.metrics import log_loss
-from sklearn.cross_validation import train_test_split
+from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
 import pandas
 import math
