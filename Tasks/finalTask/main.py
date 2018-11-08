@@ -27,7 +27,6 @@ X = features
 # Много ли пропусков в данных? Запишите названия признаков, имеющих пропуски,
 # и попробуйте для любых двух из них дать обоснование, почему их значения могут быть пропущены.
 
-# print("space:\n", features.count())
 
 # 3. Замените пропуски на нули с помощью функции fillna().
 # На самом деле этот способ является предпочтительным для логистической регрессии,
@@ -38,8 +37,6 @@ X = features
 # Мы не требуем этого в задании, но при желании попробуйте разные подходы к обработке пропусков и сравните их между собой.
 
 features.fillna('0', inplace=True)
-
-# print("without space:\n", features.count())
 
 # 4. Какой столбец содержит целевую переменную? Запишите его название.
 
@@ -56,44 +53,12 @@ print('radiant_win')
 # Долго ли настраивались классификаторы?
 # Достигнут ли оптимум на испытанных значениях параметра n_estimators, или же качество, скорее всего, продолжит расти при дальнейшем его увеличении?
 
-#
-# X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.7)
-#
-#
-# def log_loss_results(model, X, y):
-#     # Используйте метод staged_decision_function для предсказания качества на обучающей и тестовой выборке
-#     # на каждой итерации.
-#     results = []
-#     for pred in model.staged_decision_function(X):
-#         results.append(log_loss(y, [sigmoid(y_pred) for y_pred in pred]))
-#
-#     return results
-#
-#
+
 def show_plot(accuracy):
     plt.figure()
     plt.plot(accuracy.index, accuracy.values, 'r', linewidth=2)
     plt.legend(['test', 'train'])
     plt.savefig('../rate.png')
-
-
-
-#
-# def model_test(learning_rate):
-#     model = GradientBoostingClassifier(learning_rate=learning_rate, n_estimators=250, verbose=True, random_state=241)
-#     model.fit(X, y)
-#
-#     train_loss = log_loss_results(model, X_train, y_train)
-#     test_loss = log_loss_results(model, X_test, y_test)
-#     return plot_loss(learning_rate, test_loss, train_loss)
-#
-#
-# def forest_train(n_estimators_rate):
-#     model = RandomForestClassifier(n_estimators=n_estimators_rate, random_state=241)
-#     model.fit(X_train, y_train)
-#     y_pred = model.predict_proba(X_test)[:, 1]
-#     test_loss = log_loss(y_test, y_pred)
-#     print(3, test_loss)
 
 
 # Оцените качество градиентного бустинга (GradientBoostingClassifier) с помощью данной кросс-валидации,
@@ -103,19 +68,27 @@ def test_accuracy(cv, X, y):
     k_range = [10, 30, 50, 70, 100]
     for k in k_range:
         print('k=', k)
-        model = RandomForestClassifier(n_estimators=k)
-        scores.append(cross_val_score(model, X, y, cv=cv, scoring='accuracy'))
+        model_time_start = datetime.datetime.now()
+
+        model = RandomForestClassifier(n_estimators=k, random_state=241, n_jobs=-1)
+        model_accuracy = cross_val_score(model, X, y, cv=cv, scoring='accuracy')
+        scores.append(model_accuracy)
+
+        print('Time:', datetime.datetime.now() - model_time_start)
+        print('model_accuracy=', model_accuracy.mean())
 
     return pandas.DataFrame(scores, k_range).mean(axis=1).sort_values(ascending=False)
 
 
+
+
+
 # ***************************************************************************
 
-start_time = datetime.datetime.now()
+total_time_start = datetime.datetime.now()
 
-cv = KFold(n_splits=5, shuffle=True)
+cv = KFold(n_splits=5, shuffle=True, random_state=241)
 accuracy = test_accuracy(cv, X, y)
-
 
 top_accuracy = accuracy.head(1)
 print('top_accuracy.index[0]=', top_accuracy.index[0])
@@ -123,8 +96,37 @@ print('top_accuracy.values[0]=', top_accuracy.values[0])
 
 show_plot(accuracy)
 
-#top_accuracy.index[0]= 100
-# top_accuracy.values[0]= 0.6396585416023861
-# Time elapsed: 0:08:41.905862
+print('Time elapsed:', datetime.datetime.now() - total_time_start)
 
-print('Time elapsed:', datetime.datetime.now() - start_time)
+# Results
+# top_accuracy.index[0]= 100
+# top_accuracy.values[0]= 0.6387740409338682
+# Time elapsed: 0:02:18.327551
+
+
+# В отчете по данному этапу вы должны ответить на следующие вопросы:
+
+# 1. Какие признаки имеют пропуски среди своих значений?
+# Что могут означать пропуски в этих признаках (ответьте на этот вопрос для двух любых признаков)?
+# radiant_flying_courier_time: время приобретения предмета "flying_courier" - команда может не покупать предмет
+# first_blood_time, first_blood_team и first_blood_player1 - игра может закончиться без кровопролития
+
+# 2. Как называется столбец, содержащий целевую переменную?
+# radiant_win
+
+# 3. Как долго проводилась кросс-валидация для градиентного бустинга с 30 деревьями?
+# Инструкцию по измерению времени можно найти ниже по тексту. Какое качество при этом получилось?
+# Напомним, что в данном задании мы используем метрику качества AUC-ROC.
+# k= 30
+# Time: 0:00:17.476608
+# model_accuracy= 0.6215982721382289
+
+# 4. Имеет ли смысл использовать больше 30 деревьев в градиентном бустинге?
+# Что бы вы предложили делать, чтобы ускорить его обучение при увеличении количества деревьев?
+
+# При увеличении количеста деревьев точность классификации возрасла незначительно.
+# Однако обучеие заняло значительно больше времени.
+# Я считаю что быльше 30 деревьев использовать не целесообразно.
+
+# Для ускорения обучения я использовал распараллеливание потоков.
+# Градиентный бустинг очень хорошо распараллеливается. Время сокрасилось с 8.5 минут до 2.2
