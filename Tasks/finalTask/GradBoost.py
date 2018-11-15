@@ -1,5 +1,4 @@
 import datetime
-import helpers
 import matplotlib.pyplot as plt
 import pandas
 from sklearn.ensemble import GradientBoostingClassifier
@@ -10,7 +9,16 @@ from sklearn.model_selection import KFold, cross_val_score
 # 1. Считайте таблицу с признаками из файла features.csv с помощью кода, приведенного выше.
 # Удалите признаки, связанные с итогами матча (они помечены в описании данных как отсутствующие в тестовой выборке).
 
-X, y, X_kaggle = helpers.get_clean_data()
+features = pandas.read_csv('./input_data/features.csv', index_col='match_id')
+
+y = features['radiant_win']
+
+X = features.drop(columns=['duration',
+                  'radiant_win',
+                  'tower_status_radiant',
+                  'tower_status_dire',
+                  'barracks_status_radiant',
+                  'barracks_status_dire'])
 
 # 2. Проверьте выборку на наличие пропусков с помощью функции count(),
 # которая для каждого столбца показывает число заполненных значений.
@@ -85,11 +93,24 @@ show_plot(accuracy, 'grad_boost_plot')
 
 print('_grad_boost Time elapsed:', datetime.datetime.now() - total_time_start)
 
-
 # Results
+# Time: 0:00:16.144635
+# model_accuracy= 0.6648506879750012
+# k= 30
+# Time: 0:00:40.155483
+# model_accuracy= 0.6900064710388155
+# k= 50
+# Time: 0:00:59.524232
+# model_accuracy= 0.6974943609466162
+# k= 70
+# Time: 0:01:20.754946
+# model_accuracy= 0.7021165414535407
+# k= 100
+# Time: 0:02:06.877864
+# model_accuracy= 0.7062229783991214
 # top_accuracy.index[0]= 100
-# top_accuracy.values[0]= 0.6387740409338682
-# Time elapsed: 0:02:18.327551
+# top_accuracy.values[0]= 0.7062229783991214
+# _grad_boost Time elapsed: 0:05:23.521048
 
 
 # В отчете по данному этапу вы должны ответить на следующие вопросы:
@@ -118,5 +139,3 @@ print('_grad_boost Time elapsed:', datetime.datetime.now() - total_time_start)
 
 # Для ускорения обучения я использовал распараллеливание потоков.
 # Градиентный бустинг очень хорошо распараллеливается. Время сокрасилось с 8.5 минут до 2.2
-
-
