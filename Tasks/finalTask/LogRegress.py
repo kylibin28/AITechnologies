@@ -2,6 +2,7 @@ import datetime
 
 import matplotlib.pyplot as plt
 import pandas
+import numpy as np
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import KFold, cross_val_score
 
@@ -78,31 +79,31 @@ def test_accuracy_logic_regress(cv, X, y):
 # Изменилось ли качество? Чем вы можете это объяснить?
 
 
-total_time_logistic_start_1 = datetime.datetime.now()
-
-cv_1 = KFold(n_splits=5, shuffle=True, random_state=42)
-
-X = X.drop(columns=['lobby_type',
-           'r1_hero',
-           'r2_hero',
-           'r3_hero',
-           'r4_hero',
-           'r5_hero',
-           'd1_hero',
-           'd2_hero',
-           'd3_hero',
-           'd4_hero',
-           'd5_hero'])
-
-accuracy_1 = test_accuracy_logic_regress(cv_1, X, y)
-
-top_accuracy_1 = accuracy_1.head(1)
-print('top_accuracy_1.index[0]=', top_accuracy_1.index[0])
-print('top_accuracy_1.values[0]=', top_accuracy_1.values[0])
-
-show_plot(accuracy_1, 'logistic_plot_1')
-
-print('_logistic Time elapsed:', datetime.datetime.now() - total_time_logistic_start_1)
+# total_time_logistic_start_1 = datetime.datetime.now()
+#
+# cv_1 = KFold(n_splits=5, shuffle=True, random_state=42)
+#
+# X = X.drop(columns=['lobby_type',
+#            'r1_hero',
+#            'r2_hero',
+#            'r3_hero',
+#            'r4_hero',
+#            'r5_hero',
+#            'd1_hero',
+#            'd2_hero',
+#            'd3_hero',
+#            'd4_hero',
+#            'd5_hero'])
+#
+# accuracy_1 = test_accuracy_logic_regress(cv_1, X, y)
+#
+# top_accuracy_1 = accuracy_1.head(1)
+# print('top_accuracy_1.index[0]=', top_accuracy_1.index[0])
+# print('top_accuracy_1.values[0]=', top_accuracy_1.values[0])
+#
+# show_plot(accuracy_1, 'logistic_plot_1')
+#
+# print('_logistic Time elapsed:', datetime.datetime.now() - total_time_logistic_start_1)
 
 
 # top_accuracy_1.index[0]= 2.0
@@ -113,19 +114,21 @@ print('_logistic Time elapsed:', datetime.datetime.now() - total_time_logistic_s
 # Это важные признаки — герои имеют разные характеристики, и некоторые из них выигрывают чаще, чем другие.
 # Выясните из данных, сколько различных идентификаторов героев существует в данной игре (вам может пригодиться фукнция unique или value_counts).
 
-hero_features = features['r1_hero']
-hero_features.append(features['r2_hero'],
-                     features['r2_hero'],
-                     features['r3_hero'],
-                     features['r4_hero'],
-                     features['r5_hero'],
-                     features['d1_hero'],
-                     features['d2_hero'],
-                     features['d3_hero'],
-                     features['d4_hero'],
-                     features['d5_hero'])
+hero_features = features[['r1_hero',
+                          'r2_hero',
+                          'r3_hero',
+                          'r4_hero',
+                          'r5_hero',
+                          'd1_hero',
+                          'd2_hero',
+                          'd3_hero',
+                          'd4_hero',
+                          'd5_hero']]
 
-print('unique counts=', hero_features.count())
+n_len = len(pandas.unique(hero_features.values.ravel('K')))
+
+print('unique counts=', n_len)
+# unique counts= 108
 
 # 4. Воспользуемся подходом "мешок слов" для кодирования информации о героях.
 # Пусть всего в игре имеет N различных героев.
@@ -134,12 +137,11 @@ print('unique counts=', hero_features.count())
 # Ниже вы можете найти код, который выполняет данной преобразование.
 # Добавьте полученные признаки к числовым, которые вы использовали во втором пункте данного этапа.
 
+print(hero_features)
 
-X_pick = np.zeros((data.shape[0], N))
+X_pick = np.zeros((hero_features.shape[0], n_len))
 
-for i, match_id in enumerate(data.index):
-    for p in xrange(5):
-        X_pick[i, data.ix[match_id, 'r%d_hero' % (p + 1)] - 1] = 1
-        X_pick[i, data.ix[match_id, 'd%d_hero' % (p + 1)] - 1] = -1
-
-
+for i, match_id in enumerate(hero_features.index):
+    for p in range(5):
+        X_pick[i, hero_features.ix[match_id, 'r%d_hero' % (p + 1)] - 1] = 1
+        X_pick[i, hero_features.ix[match_id, 'd%d_hero' % (p + 1)] - 1] = -1
